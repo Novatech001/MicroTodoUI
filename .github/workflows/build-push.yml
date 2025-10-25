@@ -1,0 +1,47 @@
+name: Build and Push to ACR
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+  
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: newtodoui
+      IMAGE_TAG: v1
+      ACR_NAME: newacr08
+      ACR_LOGIN_SERVER: newacr08.azurecr.io
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Azure Login
+        uses: Azure/login@v2.3.0
+        with:
+          client-id: c7d7d1ec-0dde-4094-944e-df1d1b8b7326
+          tenant-id: ea7cb1e6-b6fb-4870-9412-689bc6fe6506
+          subscription-id: 818db7f4-d80e-42f3-ae3e-b98232ed02c0
+
+      - name: Log in to ACR
+        run: |
+          az acr login --name $ACR_NAME
+
+      - name: Build Docker Image
+        run: |
+          docker build -t $IMAGE_NAME:$IMAGE_TAG .
+
+      - name: Tag Docker Image for ACR
+        run: |
+          docker tag $IMAGE_NAME:$IMAGE_TAG $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
+
+      - name: Push Docker Image to ACR
+        run: |
+          docker push $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
