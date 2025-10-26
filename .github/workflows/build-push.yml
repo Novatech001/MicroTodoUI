@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      IMAGE_NAME: newtodoui
+      IMAGE_NAME: todoui
       IMAGE_TAG: v1
-      ACR_NAME: newacr08
-      ACR_LOGIN_SERVER: newacr08.azurecr.io
+      ACR_NAME: newacr09
+      ACR_LOGIN_SERVER: newacr09.azurecr.io
 
     steps:
       - name: Checkout code
