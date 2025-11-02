@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -14,10 +15,10 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      IMAGE_NAME: todoui
+      IMAGE_NAME: microui
       IMAGE_TAG: v1
-      ACR_NAME: newacr09
-      ACR_LOGIN_SERVER: newacr09.azurecr.io
+      ACR_NAME: anacr
+      ACR_LOGIN_SERVER: anacr.azurecr.io
 
     steps:
       - name: Checkout code
