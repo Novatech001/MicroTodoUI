@@ -1,45 +1,57 @@
 name: Build and Push to ACR
 
 on:
-  workflow_dispatch:
+  workflow_dispatch
 
 permissions:
   id-token: write
   contents: read
-  
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    environment: production
 
     env:
-      IMAGE_NAME: microui
-      IMAGE_TAG: v1
-      ACR_NAME: anacr
-      ACR_LOGIN_SERVER: anacr.azurecr.io
+      IMAGE_NAME: todoui
+      IMAGE_TAG: ${{ github.sha }}
+      ACR_NAME: newacr09
+      ACR_LOGIN_SERVER: newacr09.azurecr.io
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Azure Login
-        uses: Azure/login@v2.3.0
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
         with:
-          client-id: c7d7d1ec-0dde-4094-944e-df1d1b8b7326
-          tenant-id: ea7cb1e6-b6fb-4870-9412-689bc6fe6506
-          subscription-id: 818db7f4-d80e-42f3-ae3e-b98232ed02c0
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Log in to ACR
-        run: |
-          az acr login --name $ACR_NAME
+      - name: Docker Login to ACR (OIDC)
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ env.ACR_LOGIN_SERVER }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Build Docker Image
-        run: |
-          docker build -t $IMAGE_NAME:$IMAGE_TAG .
+        run: docker build -t $IMAGE_NAME:$IMAGE_TAG .
 
-      - name: Tag Docker Image for ACR
+      - name: Scan Docker Image (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: $IMAGE_NAME:$IMAGE_TAG
+          severity: CRITICAL,HIGH
+          format: 'table'
+
+      - name: Tag and Push Docker Image
         run: |
           docker tag $IMAGE_NAME:$IMAGE_TAG $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
-
-      - name: Push Docker Image to ACR
-        run: |
           docker push $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
+
+      - name: Clean up
+        run: docker system prune -af
+
