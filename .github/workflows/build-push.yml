@@ -13,10 +13,10 @@ jobs:
     environment: production
 
     env:
-      IMAGE_NAME: todoui
+      IMAGE_NAME: tudoui
       IMAGE_TAG: ${{ github.sha }}
-      ACR_NAME: newacr09
-      ACR_LOGIN_SERVER: newacr09.azurecr.io
+      ACR_NAME: anzacr1
+      ACR_LOGIN_SERVER: anzacr1.azurecr.io
 
     steps:
       - name: Checkout code
