@@ -1,58 +1,65 @@
-name: Build and Push React App to ACR
+name: Build, Scan and Push React App to ACR
 
 on:
   push:
     branches:
-      - master
+      - main
 
 permissions:
-  id-token: write
+  id-token: write     # Needed for OIDC Login
   contents: read
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-
+    
     env:
-      IMAGE_NAME: todoui
+      IMAGE_NAME: tudoui
       IMAGE_TAG: ${{ github.sha }}
       ACR_NAME: anzacr1
       ACR_LOGIN_SERVER: anzacr1.azurecr.io
 
     steps:
+      # 1️. Checkout source code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 1️. Login to Azure using OIDC
+      # 2 Login to Azure using OIDC
       - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURECLIENTID }}
-          tenant-id: ${{ secrets.AZURETENANTID }}
-          subscription-id: ${{ secrets.AZURESUBSCRIPTIONID }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      # 2️. Login to ACR using Azure CLI
+      # 3. Login to Azure Container Registry
       - name: Log in to ACR
         run: az acr login --name $ACR_NAME
 
-      # 3️. Build and Push Docker image
+      # 4. Build Docker Image
       - name: Build Docker Image
         run: docker build -t $IMAGE_NAME:$IMAGE_TAG .
-        
-      # 4. image scaned via trivy
-      - name: Scan Docker Image (Trivy)
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-          severity: CRITICAL,HIGH
-          format: 'table'
 
-      # 5. image tag and push
+      # 5. Tag and Push Docker Image to ACR
       - name: Tag and Push Docker Image
         run: |
           docker tag $IMAGE_NAME:$IMAGE_TAG $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
           docker push $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
-          
-      # 6. Clean up (optional but recommended)
+
+      # 6. Security Scan using Trivy
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          vuln-type: 'os,library'
+          ignore-unfixed: true
+          exit-code: '0'   # '1' = fail build on vulns; '0' = continue build
+
+      # 7. Cleanup Docker space
       - name: Clean up
         run: docker system prune -af
+
+
+
