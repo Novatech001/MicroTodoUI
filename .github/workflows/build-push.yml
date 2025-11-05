@@ -1,7 +1,9 @@
-name: Build and Push to ACR
+name: Build and Push React App to ACR
 
 on:
-  workflow_dispatch
+  push:
+    branches:
+      - main
 
 permissions:
   id-token: write
@@ -13,7 +15,7 @@ jobs:
     environment: production
 
     env:
-      IMAGE_NAME: tudoui
+      IMAGE_NAME: todoui
       IMAGE_TAG: ${{ github.sha }}
       ACR_NAME: anzacr1
       ACR_LOGIN_SERVER: anzacr1.azurecr.io
@@ -22,6 +24,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 1. Login to Azure using OIDC
       - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
@@ -29,29 +32,15 @@ jobs:
           tenant-id: ${{ secrets.AZURETENANTID }}
           subscription-id: ${{ secrets.AZURESUBSCRIPTIONID }}
 
-      - name: Docker Login to ACR (OIDC)
-        uses: azure/docker-login@v2
-        with:
-          login-server: ${{ env.ACR_LOGIN_SERVER }}
-          client-id: ${{ secrets.AZURECLIENTID }}
-          tenant-id: ${{ secrets.AZURETENANTID }}
-          subscription-id: ${{ secrets.AZURESUBSCRIPTIONID }}
+      # 2️. Login to ACR using Azure CLI
+      - name: Log in to ACR
+        run: az acr login --name $ACR_NAME
 
+      # 3️. Build and Push Docker image
       - name: Build Docker Image
         run: docker build -t $IMAGE_NAME:$IMAGE_TAG .
-
-      - name: Scan Docker Image (Trivy)
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: $IMAGE_NAME:$IMAGE_TAG
-          severity: CRITICAL,HIGH
-          format: 'table'
 
       - name: Tag and Push Docker Image
         run: |
           docker tag $IMAGE_NAME:$IMAGE_TAG $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
           docker push $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
-
-      - name: Clean up
-        run: docker system prune -af
-
