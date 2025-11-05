@@ -44,3 +44,7 @@ jobs:
         run: |
           docker tag $IMAGE_NAME:$IMAGE_TAG $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
           docker push $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
+
+      - name: Clean up
+        run: docker system prune -af
+
