@@ -1,9 +1,7 @@
 name: Build, Scan and Push React App to ACR
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 permissions:
   id-token: write     # Needed for OIDC Login
