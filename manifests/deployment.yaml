@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: todo-ui
-        image: anacr.azurecr.io/microui:v1
+        image: newacr01.azurecr.io/touimicro:a61437f232e531e98acb4ada9a16d8179876ab0c
         imagePullPolicy: Always
         ports:
         - containerPort: 80

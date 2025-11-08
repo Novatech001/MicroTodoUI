@@ -5,7 +5,7 @@ metadata:
 spec:
   ingressClassName: azure-application-gateway
   rules:
-  - host: anit.blog
+  - host: ui.anit.blog
     http:
       paths:
       - pathType: Prefix
