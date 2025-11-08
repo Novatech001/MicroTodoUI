@@ -1,6 +1,9 @@
 name: Build, Scan and Push React App to ACR
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -12,10 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     
     env:
-      IMAGE_NAME: tudoui
+      IMAGE_NAME: touimicro
       IMAGE_TAG: ${{ github.sha }}
-      ACR_NAME: anzacr1
-      ACR_LOGIN_SERVER: anzacr1.azurecr.io
+      ACR_NAME: newacr01
+      ACR_LOGIN_SERVER: newacr01.azurecr.io
 
     steps:
       # 1️. Checkout source code
