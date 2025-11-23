@@ -17,8 +17,8 @@ jobs:
     env:
       IMAGE_NAME: touimicro
       IMAGE_TAG: ${{ github.sha }}
-      ACR_NAME: newacr01
-      ACR_LOGIN_SERVER: newacr01.azurecr.io
+      ACR_NAME: anrg09
+      ACR_LOGIN_SERVER: myacr09.azurecr.io
 
     steps:
       # 1️. Checkout source code
