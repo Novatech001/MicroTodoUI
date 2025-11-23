@@ -5,7 +5,7 @@ metadata:
 spec:
   ingressClassName: azure-application-gateway
   rules:
-  - host: ui.anit.blog
+  - host: todo-ui.anit.blog
     http:
       paths:
       - pathType: Prefix
@@ -13,5 +13,6 @@ spec:
         backend:
           service:
             name: todo-ui
-            port: 
+            port:
               number: 80
+

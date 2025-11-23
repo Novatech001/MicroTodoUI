@@ -14,9 +14,8 @@ spec:
     spec:
       containers:
       - name: todo-ui
-        image: newacr01.azurecr.io/touimicro:a61437f232e531e98acb4ada9a16d8179876ab0c
+        image: myacr09.azurecr.io/touimicro:1749ce4ab3ca6739df565fc4e259937eaaac9ac9
         imagePullPolicy: Always
         ports:
         - containerPort: 80
-      # imagePullSecrets:
-      # - name: acr-secret
+
